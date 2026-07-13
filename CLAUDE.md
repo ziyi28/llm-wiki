@@ -21,6 +21,7 @@
 | `wiki/entities/` | 实体页：人物、工具、组织、作品 | LLM |
 | `wiki/notes/` | 查询产出：分析、比较、综合（有价值的答案回填于此） | LLM |
 | `CLAUDE.md` | 本 schema，随使用与用户共同演化 | 双方 |
+| `.claude/skills/` | 三大工作流的可执行 skill：`/ingest`、`/query`、`/lint` | 双方 |
 
 ## 页面格式
 
@@ -43,6 +44,8 @@ sources: [raw/来源文件名.md]
 - 文件名：中文通用名；专有名词保留英文（如 `RAG.md`、`Obsidian.md`）。
 
 ## 工作流
+
+三大工作流已封装为项目 skill：**`/ingest`、`/query`、`/lint`**（定义在 `.claude/skills/`）。执行细节以 skill 文件为准，本节为约定概要。
 
 ### Ingest（摄入新来源）
 

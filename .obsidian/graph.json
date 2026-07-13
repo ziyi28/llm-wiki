@@ -9,23 +9,38 @@
   "colorGroups": [
     {
       "query": "path:wiki/sources",
-      "color": { "a": 1, "rgb": 14701138 }
+      "color": {
+        "a": 1,
+        "rgb": 14701138
+      }
     },
     {
       "query": "path:wiki/concepts",
-      "color": { "a": 1, "rgb": 5413856 }
+      "color": {
+        "a": 1,
+        "rgb": 5413856
+      }
     },
     {
       "query": "path:wiki/entities",
-      "color": { "a": 1, "rgb": 7062123 }
+      "color": {
+        "a": 1,
+        "rgb": 7062123
+      }
     },
     {
       "query": "path:wiki/notes",
-      "color": { "a": 1, "rgb": 14721106 }
+      "color": {
+        "a": 1,
+        "rgb": 14721106
+      }
     },
     {
       "query": "path:raw",
-      "color": { "a": 1, "rgb": 8421504 }
+      "color": {
+        "a": 1,
+        "rgb": 8421504
+      }
     }
   ],
   "collapse-display": true,
