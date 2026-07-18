@@ -1,67 +1,39 @@
-LLM Wiki — Schema
-本仓库是一个「LLM 维护的知识库」，实例化自 LLM Wiki 模式。分工：
 
-用户：提供来源（放入 raw/）、提问、把关方向。
-LLM：全部的写作、摘要、交叉引用、归档、簿记——即 wiki/ 下所有内容的创建与维护。
-用户在 Obsidian 中把本目录作为 vault 打开，浏览页面和关系图谱；LLM 在 Claude Code 中读写文件。
+LLM Wiki — 个人知识库
 
-目录结构
-路径	作用	写权限
-raw/	原始资料：文章、论文、剪藏、笔记。只读——LLM 永不修改	用户
-raw/assets/	Obsidian 剪藏文章的本地图片附件	Obsidian
-wiki/首页.md	总览页：知识库说明与关键入口	LLM
-wiki/index.md	内容目录：每页一行摘要，按类别组织，每次 ingest 后更新	LLM
-wiki/log.md	时间线日志，append-only，新条目追加到文件末尾	LLM
-wiki/sources/	来源摘要页：每个 raw 来源对应一页	LLM
-wiki/concepts/	概念页：方法、理论、模式、术语	LLM
-wiki/entities/	实体页：人物、工具、组织、作品	LLM
-wiki/notes/	查询产出：分析、比较、综合（有价值的答案回填于此）	LLM
-CLAUDE.md	本 schema，随使用与用户共同演化	双方
-.claude/skills/	三大工作流的可执行 skill：/ingest、/query、/lint	双方
-页面格式
-每个 wiki 页面以 YAML frontmatter 开头：
+基于 LLM Wiki 模式 (wiki/concepts/llm-wiki.md) 构建的个人知识库：人类负责收集资料、提问、把关方向；LLM（Claude Code）负责全部的写作、摘要、交叉引用与归档。目标是让每一份读过的资料、每一次有价值的思考，都能沉淀成可复用、可追溯、可自检的知识网络，而不是读完就忘。
 
----
-type: source | concept | entity | note | meta
-tags: [标签]
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-sources: [raw/来源文件名.md]
----
-type 与所在目录对应；meta 仅用于 首页 / index / log 三个特殊页。
-sources 列出该页内容依据的原始资料，便于溯源和 Dataview 查询。
-页面正文用中文，技术术语（RAG、ingest、frontmatter …）保留英文。
-交叉引用一律用 wikilink：[[页面名]] 或 [[页面名|显示文字]]——Obsidian 图谱的边由此而来。正文提到已有页面对应的概念/实体时应加链接。
-文件名：中文通用名；专有名词保留英文（如 RAG.md、Obsidian.md）。
-工作流
-三大工作流已封装为项目 skill：/ingest、/query、/lint（定义在 .claude/skills/）。执行细节以 skill 文件为准，本节为约定概要。
+架构
 
-Ingest（摄入新来源）
-用户把新资料放进 raw/ 并要求处理时：
+raw/               原始资料，人类收集，LLM 只读不改
+  assets/          本地化图片/附件
+wiki/              知识库本体，LLM 全权维护
+  concepts/        概念、方法、模式、技术要点
+  notes/           来源摘要、专题总结
+  entities/        人物、项目、组织
+  synthesis/       跨来源的综合对比分析
+  index.md         内容目录，每次操作后更新
+  log.md           操作日志，只追加
+.claude/skills/    三大工作流的可执行 Claude Code Skill
+CLAUDE.md          操作手册：目录约定、frontmatter 规范、写作风格
 
-通读来源全文（含图片时先读文本，再按需逐张查看图片）。
-与用户简要讨论核心要点，确认侧重点。
-在 wiki/sources/ 写来源摘要页（要点、主张、与已有内容的关系）。
-创建或更新相关的 concepts / entities 页：新概念建页；已有页面融合新信息，新旧矛盾之处显式标注（同时引用两个来源）。一个来源触及 10-15 个页面是正常的。
-更新 wiki/index.md（含页面计数与日期）。
-在 wiki/log.md 末尾追加条目。
-Query（查询）
-先读 wiki/index.md 定位相关页面，再读页面本身；必要时回查 raw 来源。
-综合作答，注明依据的页面/来源。
-有沉淀价值的答案（比较、分析、新联系）写入 wiki/notes/，更新 index、追加 log——让探索成果与来源一样复利。
-Lint（健康检查）
-用户要求体检时，检查并报告：
+工作流：三个 Skill
 
-页面之间的矛盾；被新来源推翻的过时声明
-孤儿页（无入链）；被多处提到却没有自己页面的概念
-缺失的交叉引用；index 与实际文件不一致；死链（wikilink 指向不存在的页面）
-值得追问的问题、值得补充的来源
-Log 条目格式
-## [YYYY-MM-DD] ingest|query|lint | 标题
-- 一句话说明 + 涉及页面
-固定前缀使日志可 grep：grep "^## \[" wiki/log.md。
+工作流没有停留在"跟 AI 聊了几句"的层面，而是封装成了三个正式的 Claude Code Skill（SKILL.md，含 argument-hint、结构化步骤、可执行的验证脚本），保证每次执行都可复现：
 
-约束
-raw/ 只读；发现来源本身有问题时在 wiki 页面标注，不改原文。
-删除或重命名 wiki 页面前，先全库搜索指向它的 wikilink 一并处理。
-本文件由双方共同演化：发现更好的约定，与用户确认后更新此处。
+- /ingest [来源文件] — 消化 raw/ 中的新资料：通读全文 → 与用户对焦重点 → 写摘要页 → 建/改概念与实体页 → 更新索引与日志。单个来源平均触达 10-15 个页面，新旧信息冲突时用 > [!warning] 显式标注而不是静默覆盖。
+- /query [问题] — 基于已有知识库回答问题，逐条论点标注依据页面；有沉淀价值的答案（对比、分析、新联系）会反过来写成新页面，让探索本身也能复利。
+- /lint — 健康检查，脚本扫死链、孤立页、index 缺项、frontmatter/status 字段缺失、命名与链接风格问题，再人工复核矛盾与过时声明，按 🔴 直接修复 / 🟡 待确认 / 💡 待探索 三级出报告。
+
+当前规模
+
+- 5 个原始来源（Java 基础面试题、微服务教程、中州养老 28 道面试题、VoHive 项目文档、LLM Wiki 模式本身）
+- 41 个内容页：35 概念 + 3 笔记 + 2 实体 + 1 综合分析
+- 累计 2 轮完整健康检查：发现并修复断链 2 处、孤立页面 4 个、链接风格不一致 106 处，现已归零
+
+使用
+
+1. 用 Obsidian 打开本目录作为 vault，靠 graph view 浏览知识连接
+2. 新资料放进 raw/，跑 /ingest
+3. 想了解什么就直接问，跑 /query
+4. 定期跑 /lint 做体检
